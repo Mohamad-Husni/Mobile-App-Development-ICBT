@@ -3,12 +3,12 @@ package com.example.printxpress;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -17,15 +17,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Senior Developer Implementation of Hybrid Relational Order Submission.
- * Handles Step-by-Step SQLite Relational Persistence and Firebase Cloud Sync.
- */
 public class CustomerDashboardActivity extends AppCompatActivity {
 
     private static final String TAG = "OrderSync";
-    private EditText etMaterial, etQuantity;
-    private Button btnPlaceOrder;
+    private TextInputEditText etMaterial, etQuantity;
+    private MaterialButton btnPlaceOrder;
     private DBHelper dbHelper;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
@@ -58,7 +54,18 @@ public class CustomerDashboardActivity extends AppCompatActivity {
             return;
         }
 
-        int quantity = Integer.parseInt(qtyInput);
+        int quantity;
+        try {
+            quantity = Integer.parseInt(qtyInput);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Please enter a valid quantity", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (quantity <= 0) {
+            Toast.makeText(this, "Quantity must be at least 1", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         double unitPrice = 12.0; // Mock Unit Price
         double totalAmount = quantity * unitPrice;
 
@@ -77,18 +84,25 @@ public class CustomerDashboardActivity extends AppCompatActivity {
                     // STEP C: Cloud DB - Sync with Firebase
                     syncToCloud(userEmail, materialType, quantity, totalAmount);
                 } else {
-                    Toast.makeText(this, "SQLite Error: Item insertion failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Couldn't save your order details. Please try again.", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(this, "SQLite Error: Order header failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Couldn't place your order. Please try again.", Toast.LENGTH_SHORT).show();
             }
         } catch (Exception e) {
             Log.e(TAG, "Critical Database Error: " + e.getMessage());
-            Toast.makeText(this, "An internal error occurred", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void syncToCloud(String email, String material, int qty, double total) {
+        if (!NetworkUtils.isConnected(this)) {
+            Toast.makeText(this, "Order saved. It will sync to the cloud once you're back online.", Toast.LENGTH_SHORT).show();
+            etMaterial.setText("");
+            etQuantity.setText("");
+            return;
+        }
+
         String cloudId = mDatabase.child("Orders").push().getKey();
 
         Map<String, Object> orderMap = new HashMap<>();

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PrintXpress</string>
+
+    <string name="order_id_format">Order #%1$d</string>
+    <string name="customer_email_format">Customer: %1$s</string>
+    <string name="total_price_format">Total: $%1$.2f</string>
+</resources>

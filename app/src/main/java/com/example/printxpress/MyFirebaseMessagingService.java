@@ -1,10 +1,12 @@
 package com.example.printxpress;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +14,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -115,9 +118,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
-        if (notificationManager != null) {
-            // notificationId is a unique int for each notification that you must define
-            notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+        if (notificationManager == null) {
+            return;
         }
+
+        // Android 13+ requires the POST_NOTIFICATIONS runtime permission; skip silently
+        // rather than risk a SecurityException if the user has denied/not yet granted it.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.w(TAG, "Skipping notification display: POST_NOTIFICATIONS not granted");
+            return;
+        }
+
+        // notificationId is a unique int for each notification that you must define
+        notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
     }
 }

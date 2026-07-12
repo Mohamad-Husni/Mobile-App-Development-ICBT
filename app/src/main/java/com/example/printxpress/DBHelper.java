@@ -5,12 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "PrintXpress.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     // User Roles
     public static final String ROLE_CUSTOMER = "Customer";
@@ -23,15 +22,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Table: users
         String CREATE_USERS_TABLE = "CREATE TABLE users ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "name TEXT, "
                 + "email TEXT UNIQUE, "
+                + "phone TEXT, "
                 + "password TEXT, "
                 + "role TEXT)";
 
-        // Table: orders (Order Header)
         String CREATE_ORDERS_TABLE = "CREATE TABLE orders ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "email TEXT, "
@@ -39,7 +37,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "status TEXT, "
                 + "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)";
 
-        // Table: order_items (Order Details)
         String CREATE_ORDER_ITEMS_TABLE = "CREATE TABLE order_items ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + "order_id INTEGER, "
@@ -62,79 +59,115 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // CRUD: Register User
-    public boolean registerUser(String name, String email, String password, String role) {
+    public boolean registerUser(String name, String email, String phone, String password, String role) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("name", name);
-        values.put("email", email);
-        values.put("password", password);
-        values.put("role", role);
-
-        long result = db.insert("users", null, values);
-        db.close();
-        return result != -1;
+        try {
+            ContentValues values = new ContentValues();
+            values.put("name", name);
+            values.put("email", email);
+            values.put("phone", phone);
+            values.put("password", password);
+            values.put("role", role);
+            return db.insert("users", null, values) != -1;
+        } finally {
+            db.close();
+        }
     }
 
     // CRUD: Login User (Returns role string)
     public String loginUser(String email, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String role = null;
-        Cursor cursor = db.query("users", new String[]{"role"},
-                "email=? AND password=?", new String[]{email, password},
-                null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            role = cursor.getString(0);
-            cursor.close();
+        Cursor cursor = null;
+        try {
+            cursor = db.query("users", new String[]{"role"},
+                    "email=? AND password=?", new String[]{email, password},
+                    null, null, null);
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            }
+            return null;
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        db.close();
-        return role;
     }
 
     // Get User Role by Email
     public String getUserRole(String email) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String role = null;
-        Cursor cursor = db.query("users", new String[]{"role"},
-                "email=?", new String[]{email},
-                null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            role = cursor.getString(0);
-            cursor.close();
+        Cursor cursor = null;
+        try {
+            cursor = db.query("users", new String[]{"role"},
+                    "email=?", new String[]{email},
+                    null, null, null);
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            }
+            return null;
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
         }
-        db.close();
-        return role;
+    }
+
+    // Check if an email exists (used by the password-reset flow)
+    public boolean checkEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            cursor = db.query("users", new String[]{"id"},
+                    "email=?", new String[]{email},
+                    null, null, null);
+            return cursor.moveToFirst();
+        } finally {
+            if (cursor != null) cursor.close();
+            db.close();
+        }
+    }
+
+    // Update a user's password (used by the password-reset flow)
+    public boolean updatePassword(String email, String newPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            ContentValues values = new ContentValues();
+            values.put("password", newPassword);
+            int rows = db.update("users", values, "email = ?", new String[]{email});
+            return rows > 0;
+        } finally {
+            db.close();
+        }
     }
 
     // CRUD: Insert Order Header
     public long insertOrder(String email, double totalPrice, String status) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("email", email);
-        values.put("total_price", totalPrice);
-        values.put("status", status);
-
-        long id = db.insert("orders", null, values);
-        db.close();
-        return id;
+        try {
+            ContentValues values = new ContentValues();
+            values.put("email", email);
+            values.put("total_price", totalPrice);
+            values.put("status", status);
+            return db.insert("orders", null, values);
+        } finally {
+            db.close();
+        }
     }
 
     // CRUD: Insert Order Item
     public boolean insertOrderItem(long orderId, String material, int quantity, double unitPrice) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("order_id", orderId);
-        values.put("material_type", material);
-        values.put("quantity", quantity);
-        values.put("unit_price", unitPrice);
-
-        long result = db.insert("order_items", null, values);
-        db.close();
-        return result != -1;
+        try {
+            ContentValues values = new ContentValues();
+            values.put("order_id", orderId);
+            values.put("material_type", material);
+            values.put("quantity", quantity);
+            values.put("unit_price", unitPrice);
+            return db.insert("order_items", null, values) != -1;
+        } finally {
+            db.close();
+        }
     }
 
-    // Fetch all orders
+    // Fetch all orders. Caller is responsible for closing the returned cursor.
     public Cursor getAllOrders() {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM orders ORDER BY id DESC", null);
@@ -143,10 +176,13 @@ public class DBHelper extends SQLiteOpenHelper {
     // Update order status
     public boolean updateOrderStatus(long orderId, String newStatus) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("status", newStatus);
-        int rows = db.update("orders", values, "id = ?", new String[]{String.valueOf(orderId)});
-        db.close();
-        return rows > 0;
+        try {
+            ContentValues values = new ContentValues();
+            values.put("status", newStatus);
+            int rows = db.update("orders", values, "id = ?", new String[]{String.valueOf(orderId)});
+            return rows > 0;
+        } finally {
+            db.close();
+        }
     }
 }

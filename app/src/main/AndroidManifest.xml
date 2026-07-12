@@ -2,7 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.printxpress">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
+        android:name=".PrintXpressApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher"
@@ -17,13 +22,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".ForgotPasswordActivity" />
-        <activity android:name=".DashboardActivity" />
-        <activity android:name=".PlaceOrderActivity" />
-        <activity android:name=".AdminDashboardActivity" />
-        <activity android:name=".OperatorDashboardActivity" />
-        <activity android:name=".CustomerDashboardActivity" />
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".ForgotPasswordActivity" android:exported="false" />
+        <activity android:name=".AdminDashboardActivity" android:exported="false" />
+        <activity android:name=".OperatorDashboardActivity" android:exported="false" />
+        <activity android:name=".CustomerDashboardActivity" android:exported="false" />
 
         <service
             android:name=".MyFirebaseMessagingService"
