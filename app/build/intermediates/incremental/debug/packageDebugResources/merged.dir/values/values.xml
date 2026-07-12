@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <string-array name="material_types">
+        <item>Standard Paper (80gsm)</item>
+        <item>Glossy Photo Paper</item>
+        <item>Matte Cardstock (300gsm)</item>
+        <item>Canvas Texture</item>
+        <item>Vinyl Sticker</item>
+    </string-array>
+    <color name="background">#F5F5F5</color>
+    <color name="black">#000000</color>
+    <color name="primary">#00574B</color>
+    <color name="primary_variant">#003D33</color>
+    <color name="secondary">#03DAC5</color>
+    <color name="white">#FFFFFF</color>
+    <string name="gcm_defaultSenderId" translatable="false">492009100019</string>
+    <string name="google_api_key" translatable="false">AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4</string>
+    <string name="google_app_id" translatable="false">1:492009100019:android:426d5c58d85ae70612dd86</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4</string>
+    <string name="google_storage_bucket" translatable="false">printxpress-1f355.firebasestorage.app</string>
+    <string name="project_id" translatable="false">printxpress-1f355</string>
+    <style name="Theme.PrintXpress" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <item name="android:statusBarColor" ns1:targetApi="l">?attr/colorPrimaryVariant</item>
+        
+    </style>
+</resources>

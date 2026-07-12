@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "492009100019",
+    "project_id": "printxpress-1f355",
+    "storage_bucket": "printxpress-1f355.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492009100019:android:426d5c58d85ae70612dd86",
+        "android_client_info": {
+          "package_name": "com.example.printxpress"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

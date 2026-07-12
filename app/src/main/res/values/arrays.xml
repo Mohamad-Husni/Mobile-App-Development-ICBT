@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="material_types">
+        <item>Standard Paper (80gsm)</item>
+        <item>Glossy Photo Paper</item>
+        <item>Matte Cardstock (300gsm)</item>
+        <item>Canvas Texture</item>
+        <item>Vinyl Sticker</item>
+    </string-array>
+</resources>

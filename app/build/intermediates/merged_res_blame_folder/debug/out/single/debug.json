@@ -1,0 +1,42 @@
+[
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_register.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/drawable_ic_launcher.png.flat",
+        "source": "com.example.printxpress.app-main-36:/drawable/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_place_order.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_place_order.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_admin_dashboard.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_admin_dashboard.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_customer_dashboard.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_customer_dashboard.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_dashboard.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_dashboard.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_operator_dashboard.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_operator_dashboard.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_login.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/layout_activity_forgot_password.xml.flat",
+        "source": "com.example.printxpress.app-main-36:/layout/activity_forgot_password.xml"
+    },
+    {
+        "merged": "com.example.printxpress.app-merged_res-34:/drawable_logo.png.flat",
+        "source": "com.example.printxpress.app-main-36:/drawable/logo.png"
+    }
+]
