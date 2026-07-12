@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="gcm_defaultSenderId" translatable="false">492009100019</string>
-    <string name="google_api_key" translatable="false">AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4</string>
-    <string name="google_app_id" translatable="false">1:492009100019:android:426d5c58d85ae70612dd86</string>
-    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4</string>
-    <string name="google_storage_bucket" translatable="false">printxpress-1f355.firebasestorage.app</string>
-    <string name="project_id" translatable="false">printxpress-1f355</string>
-</resources>
