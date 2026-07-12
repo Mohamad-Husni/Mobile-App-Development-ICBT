@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/surface" app:cardCornerRadius="12dp" app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="14dp">
+
+        <TextView android:id="@+id/tvPromoTitleAdmin" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:fontFamily="sans-serif-medium"
+            android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/tvPromoActive"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
+            tools:text="Summer Sale" />
+
+        <TextView android:id="@+id/tvPromoActive" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:textSize="12sp" android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"
+            tools:text="Active" tools:textColor="@color/success" />
+
+        <TextView android:id="@+id/tvPromoSubAdmin" android:layout_width="0dp"
+            android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:textColor="@color/text_secondary" android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPromoTitleAdmin"
+            tools:text="30% off business cards" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTogglePromo"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content" android:layout_height="32dp"
+            android:layout_marginTop="8dp" android:text="Deactivate" android:textSize="12sp"
+            app:cornerRadius="8dp" app:strokeColor="@color/primary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPromoSubAdmin" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeletePromo"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content" android:layout_height="32dp"
+            android:layout_marginTop="8dp" android:layout_marginStart="8dp"
+            android:text="Delete" android:textColor="@color/error" android:textSize="12sp"
+            app:cornerRadius="8dp" app:strokeColor="@color/error"
+            app:layout_constraintStart_toEndOf="@id/btnTogglePromo"
+            app:layout_constraintTop_toBottomOf="@id/tvPromoSubAdmin" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -2,7 +2,8 @@
 <resources>
     <string name="app_name">PrintXpress</string>
 
-    <string name="order_id_format">Order #%1$d</string>
-    <string name="customer_email_format">Customer: %1$s</string>
     <string name="total_price_format">Total: $%1$.2f</string>
+    <string name="unit_price_format">Unit Price: $%1$.2f</string>
+    <string name="order_details_format">Qty: %1$d  •  %2$s</string>
+    <string name="artwork_format">Artwork: %1$s</string>
 </resources>

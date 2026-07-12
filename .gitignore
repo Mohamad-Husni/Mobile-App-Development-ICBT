@@ -12,3 +12,10 @@
 
 # Gradle module build outputs
 **/build/
+
+# Signing keystores — keep off version control
+*.jks
+*.keystore
+
+# Heap dumps
+*.hprof

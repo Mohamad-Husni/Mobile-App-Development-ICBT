@@ -5,30 +5,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    android:clickable="true"
-    android:focusable="true"
     app:cardBackgroundColor="@color/surface"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
-    app:rippleColor="@color/primary">
+    app:cardElevation="3dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- Product Name -->
         <TextView
-            android:id="@+id/tvOrderId"
+            android:id="@+id/tvProductName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/tvStatus"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Order #12" />
+            tools:text="Business Cards" />
 
+        <!-- Status Chip -->
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
@@ -40,31 +40,93 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Ready" />
+            tools:text="Processing" />
 
+        <!-- Quantity and Delivery -->
         <TextView
-            android:id="@+id/tvCustomerEmail"
+            android:id="@+id/tvOrderDetails"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:textSize="13sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvOrderId"
-            tools:text="Customer: user@example.com" />
+            app:layout_constraintTop_toBottomOf="@id/tvProductName"
+            tools:text="Qty: 50  •  Store Pickup" />
 
+        <!-- Artwork -->
+        <TextView
+            android:id="@+id/tvArtwork"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOrderDetails"
+            tools:text="Artwork: logo.png" />
+
+        <!-- Total Price -->
         <TextView
             android:id="@+id/tvTotalPrice"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="sans-serif-medium"
             android:textColor="@color/primary"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvCustomerEmail"
-            tools:text="Total: $120.00" />
+            app:layout_constraintTop_toBottomOf="@id/tvArtwork"
+            tools:text="Total: $750.00" />
+
+        <!-- Timestamp -->
+        <TextView
+            android:id="@+id/tvTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvArtwork"
+            tools:text="2024-01-15" />
+
+        <!-- Reschedule Button (shown only when status = Processing) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReschedule"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginTop="12dp"
+            android:text="Reschedule"
+            android:textColor="@color/primary"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:cornerRadius="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTotalPrice"
+            app:strokeColor="@color/primary"
+            tools:visibility="visible" />
+
+        <!-- Cancel Button (shown only when status = Processing) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelOrder"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginTop="12dp"
+            android:text="Cancel Order"
+            android:textColor="@color/error"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTotalPrice"
+            app:strokeColor="@color/error"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

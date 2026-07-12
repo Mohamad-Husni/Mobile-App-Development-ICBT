@@ -42,22 +42,33 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a notification payload
+        String title = "PrintXpress";
+        String body  = "You have a new notification.";
+        String type  = DBHelper.NOTIF_CONFIRMATION;
+
         if (remoteMessage.getNotification() != null) {
-            String title = remoteMessage.getNotification().getTitle();
-            String body = remoteMessage.getNotification().getBody();
-            showNotification(title, body);
+            if (remoteMessage.getNotification().getTitle() != null)
+                title = remoteMessage.getNotification().getTitle();
+            if (remoteMessage.getNotification().getBody() != null)
+                body = remoteMessage.getNotification().getBody();
         }
 
-        // Check if message contains a data payload (useful for custom logic)
         Map<String, String> data = remoteMessage.getData();
-        if (data.size() > 0) {
-            String title = data.get("title");
-            String message = data.get("message");
-            if (title != null && message != null) {
-                showNotification(title, message);
-            }
+        if (!data.isEmpty()) {
+            if (data.containsKey("title") && data.get("title") != null) title = data.get("title");
+            if (data.containsKey("body")  && data.get("body")  != null) body  = data.get("body");
+            if (data.containsKey("type")  && data.get("type")  != null) type  = data.get("type");
         }
+
+        com.google.firebase.auth.FirebaseUser user =
+                com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            new DBHelper(this).insertNotification(user.getUid(), type, body);
+        }
+
+        Class<?> targetClass = DBHelper.NOTIF_COMPLETION.equals(type)
+                ? MyOrdersActivity.class : NotificationsActivity.class;
+        showNotification(title, body, targetClass);
     }
 
     /**
@@ -78,8 +89,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param title       Notification title.
      * @param messageBody Notification body text.
      */
-    private void showNotification(String title, String messageBody) {
-        Intent intent = new Intent(this, LoginActivity.class);
+    private void showNotification(String title, String messageBody, Class<?> targetClass) {
+        Intent intent = new Intent(this, targetClass);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         
         // Use FLAG_IMMUTABLE for compatibility with Android 12+
