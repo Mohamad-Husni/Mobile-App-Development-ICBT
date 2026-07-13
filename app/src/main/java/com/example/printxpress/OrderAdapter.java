@@ -73,6 +73,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         h.tvTimestamp.setText(date != null && date.length() >= 10 ? date.substring(0, 10) : "");
 
         applyStatusStyle(h.tvStatus, order.getStatus());
+        applyStepperStyle(h, order.getStatus());
 
         boolean isProcessing = DBHelper.STATUS_PROCESSING.equals(order.getStatus());
         h.btnCancelOrder.setVisibility(isProcessing ? View.VISIBLE : View.GONE);
@@ -109,11 +110,48 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
     }
 
+    private void applyStepperStyle(OrderViewHolder h, String status) {
+        if (status == null) return;
+        int dimColor    = Color.parseColor("#BBBBBB");
+        int activeAmber = Color.parseColor("#B7791F");
+        int activeBlue  = Color.parseColor("#0284C7");
+        int activeGreen = Color.parseColor("#2E7D32");
+
+        h.stepProcessing.setBackgroundResource(R.drawable.bg_status_chip);
+        h.stepProcessing.setTextColor(dimColor);
+        h.stepPrinting.setBackgroundResource(R.drawable.bg_status_chip);
+        h.stepPrinting.setTextColor(dimColor);
+        h.stepReady.setBackgroundResource(R.drawable.bg_status_chip);
+        h.stepReady.setTextColor(dimColor);
+
+        switch (status) {
+            case DBHelper.STATUS_PROCESSING:
+                h.stepProcessing.setBackgroundResource(R.drawable.bg_status_processing);
+                h.stepProcessing.setTextColor(activeAmber);
+                break;
+            case DBHelper.STATUS_PRINTING:
+                h.stepProcessing.setBackgroundResource(R.drawable.bg_status_processing);
+                h.stepProcessing.setTextColor(activeAmber);
+                h.stepPrinting.setBackgroundResource(R.drawable.bg_status_chip);
+                h.stepPrinting.setTextColor(activeBlue);
+                break;
+            case DBHelper.STATUS_READY:
+                h.stepProcessing.setBackgroundResource(R.drawable.bg_status_processing);
+                h.stepProcessing.setTextColor(activeAmber);
+                h.stepPrinting.setBackgroundResource(R.drawable.bg_status_chip);
+                h.stepPrinting.setTextColor(activeBlue);
+                h.stepReady.setBackgroundResource(R.drawable.bg_status_ready);
+                h.stepReady.setTextColor(activeGreen);
+                break;
+        }
+    }
+
     @Override
     public int getItemCount() { return orders.size(); }
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
         TextView tvProductName, tvOrderDetails, tvArtwork, tvTotalPrice, tvStatus, tvTimestamp;
+        TextView stepProcessing, stepPrinting, stepReady;
         MaterialButton btnCancelOrder, btnReschedule;
 
         OrderViewHolder(@NonNull View v) {
@@ -124,6 +162,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvTotalPrice   = v.findViewById(R.id.tvTotalPrice);
             tvStatus       = v.findViewById(R.id.tvStatus);
             tvTimestamp    = v.findViewById(R.id.tvTimestamp);
+            stepProcessing = v.findViewById(R.id.stepProcessing);
+            stepPrinting   = v.findViewById(R.id.stepPrinting);
+            stepReady      = v.findViewById(R.id.stepReady);
             btnCancelOrder = v.findViewById(R.id.btnCancelOrder);
             btnReschedule  = v.findViewById(R.id.btnReschedule);
         }

@@ -15,6 +15,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class MyOrdersActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     private FirebaseFirestore firestoreDb;
     private String userId;
+    private ListenerRegistration ordersListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,13 @@ public class MyOrdersActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadOrders();
+        if (ordersListener == null) loadOrders();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (ordersListener != null) ordersListener.remove();
     }
 
     private void loadOrders() {
@@ -66,19 +74,19 @@ public class MyOrdersActivity extends AppCompatActivity {
         recyclerViewOrders.setVisibility(View.GONE);
         emptyState.setVisibility(View.GONE);
 
-        firestoreDb.collection("Orders")
+        ordersListener = firestoreDb.collection("Orders")
                 .whereEqualTo("customerId", userId)
-                .get()
-                .addOnSuccessListener(snapshots -> {
-                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
-                        String status = doc.getString("status");
-                        if (status != null) {
-                            dbHelper.updateOrderStatusByFirebaseId(doc.getId(), status);
+                .addSnapshotListener((snapshots, error) -> {
+                    if (snapshots != null) {
+                        for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
+                            String status = doc.getString("status");
+                            if (status != null) {
+                                dbHelper.updateOrderStatusByFirebaseId(doc.getId(), status);
+                            }
                         }
                     }
                     displayLocalOrders();
-                })
-                .addOnFailureListener(e -> displayLocalOrders());
+                });
     }
 
     private void displayLocalOrders() {

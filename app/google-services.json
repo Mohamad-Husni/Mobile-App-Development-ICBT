@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "492009100019-1ers70s9pq4ii9d5cebhq0f41qiktg7b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.printxpress",
+            "certificate_hash": "e585fdfa184316dc74e52ec064a86e075209d52b"
+          }
+        },
+        {
           "client_id": "492009100019-2egsrvoo0e4l3vloepodgg59ehfhpbl3.apps.googleusercontent.com",
           "client_type": 3
         }
