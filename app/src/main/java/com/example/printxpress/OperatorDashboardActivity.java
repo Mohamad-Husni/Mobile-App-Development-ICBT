@@ -184,61 +184,7 @@ public class OperatorDashboardActivity extends AppCompatActivity {
                     notif.put("createdAt", com.google.firebase.Timestamp.now());
                     firestoreDb.collection("Notifications").add(notif);
 
-                    String finalMessage = message;
-                    String finalType = type;
-                    firestoreDb.collection("Users").document(customerId).get()
-                            .addOnSuccessListener(userDoc -> {
-                                String fcmToken = userDoc.getString("fcmToken");
-                                if (fcmToken != null && !fcmToken.isEmpty()) {
-                                    sendFcmPush(fcmToken, "Order Update", finalMessage, finalType);
-                                }
-                            });
                 });
     }
 
-    private void sendFcmPush(String fcmToken, String title, String message, String type) {
-        new Thread(() -> {
-            try {
-                java.net.URL url = new java.net.URL("https://fcm.googleapis.com/fcm/send");
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setUseCaches(false);
-                conn.setDoOutput(true);
-                conn.setDoInput(true);
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Authorization", "key=" + getFcmServerKey());
-                conn.setRequestProperty("Content-Type", "application/json");
-
-                org.json.JSONObject notification = new org.json.JSONObject();
-                notification.put("title", title);
-                notification.put("body", message);
-                notification.put("sound", "default");
-
-                org.json.JSONObject data = new org.json.JSONObject();
-                data.put("title", title);
-                data.put("body", message);
-                data.put("type", type);
-
-                org.json.JSONObject payload = new org.json.JSONObject();
-                payload.put("to", fcmToken);
-                payload.put("notification", notification);
-                payload.put("data", data);
-                payload.put("priority", "high");
-
-                java.io.OutputStream os = conn.getOutputStream();
-                os.write(payload.toString().getBytes("UTF-8"));
-                os.flush();
-                os.close();
-
-                int code = conn.getResponseCode();
-                android.util.Log.d("FCM_PUSH", "Response: " + code);
-                conn.disconnect();
-            } catch (Exception e) {
-                android.util.Log.e("FCM_PUSH", "Failed: " + e.getMessage());
-            }
-        }).start();
-    }
-
-    private String getFcmServerKey() {
-        return getString(R.string.fcm_server_key);
-    }
 }

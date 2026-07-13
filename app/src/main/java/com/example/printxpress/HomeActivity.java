@@ -1,6 +1,10 @@
 package com.example.printxpress;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -12,15 +16,17 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
-
-import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.List;
 
@@ -36,10 +42,12 @@ public class HomeActivity extends AppCompatActivity {
             {"posters",         "Posters",         "30.0",  "Glossy A2/A1 poster prints."}
     };
 
+    private static final String CHANNEL_ID = "PrintXpress_Channel_01";
     private DBHelper dbHelper;
     private FirebaseFirestore firestoreDb;
     private FirebaseUser currentUser;
     private TextView tvNotifBadge;
+    private ListenerRegistration notifListener;
 
     private final ActivityResultLauncher<String> notifPermLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
@@ -73,12 +81,19 @@ public class HomeActivity extends AppCompatActivity {
         wireUpBottomNav();
         requestNotificationPermission();
         refreshFcmToken();
+        startNotificationListener();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateNotifBadge();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (notifListener != null) notifListener.remove();
     }
 
     private void syncProductsFromFirestore() {
@@ -168,6 +183,64 @@ public class HomeActivity extends AppCompatActivity {
         intent.putExtra(ProductDetailActivity.EXTRA_UNIT_PRICE,   price);
         intent.putExtra(ProductDetailActivity.EXTRA_DESCRIPTION,  desc);
         startActivity(intent);
+    }
+
+    private void startNotificationListener() {
+        String uid = currentUser.getUid();
+        createNotificationChannel();
+        notifListener = firestoreDb.collection("Notifications")
+                .whereEqualTo("userId", uid)
+                .whereEqualTo("isRead", false)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (snapshots == null) return;
+                    for (DocumentChange change : snapshots.getDocumentChanges()) {
+                        if (change.getType() == DocumentChange.Type.ADDED) {
+                            String msg = change.getDocument().getString("message");
+                            String type = change.getDocument().getString("type");
+                            if (msg != null) {
+                                dbHelper.insertNotification(uid, type != null ? type : DBHelper.NOTIF_CONFIRMATION, msg);
+                                postLocalNotification("Order Update", msg, type);
+                            }
+                        }
+                    }
+                    updateNotifBadge();
+                });
+    }
+
+    private void postLocalNotification(String title, String message, String type) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        Class<?> target = DBHelper.NOTIF_COMPLETION.equals(type)
+                ? MyOrdersActivity.class : NotificationsActivity.class;
+
+        int flags = PendingIntent.FLAG_ONE_SHOT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
+        Intent intent = new Intent(this, target);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pi = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, flags);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pi);
+
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID, "PrintXpress Notifications", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Order status updates");
+            NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) nm.createNotificationChannel(channel);
+        }
     }
 
     private void requestNotificationPermission() {
