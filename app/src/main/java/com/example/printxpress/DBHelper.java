@@ -395,6 +395,14 @@ public class DBHelper extends SQLiteOpenHelper {
     public long insertNotification(String customerId, String type, String message) {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
+            Cursor c = db.query(TABLE_NOTIFICATIONS,
+                    new String[]{"COUNT(*)"},
+                    N_CUSTOMER_ID + "=? AND " + N_MESSAGE + "=?",
+                    new String[]{customerId, message}, null, null, null);
+            boolean exists = false;
+            if (c != null) { if (c.moveToFirst()) exists = c.getInt(0) > 0; c.close(); }
+            if (exists) return -1;
+
             ContentValues v = new ContentValues();
             v.put(N_CUSTOMER_ID, customerId);
             v.put(N_TYPE, type);

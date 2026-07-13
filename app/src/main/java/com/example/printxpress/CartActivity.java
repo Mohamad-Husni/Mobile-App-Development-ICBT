@@ -248,9 +248,8 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     }
 
     private void sendConfirmationNotification(String uid, String orderId, int itemCount) {
-        String message = "Your order (#" + orderId.substring(0, 6) + ") with "
+        String message = "Your order (#" + orderId.substring(0, 6).toUpperCase() + ") with "
                 + itemCount + " item(s) is now Processing.";
-        dbHelper.insertNotification(uid, DBHelper.NOTIF_CONFIRMATION, message);
 
         Map<String, Object> notifData = new HashMap<>();
         notifData.put("userId", uid);
