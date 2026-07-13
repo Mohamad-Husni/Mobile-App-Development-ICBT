@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -109,23 +110,77 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             Toast.makeText(this, "Your cart is empty.", Toast.LENGTH_SHORT).show();
             return;
         }
+        loadDeliveryOptionsAndConfirm(cartItems);
+    }
 
-        int checkedId = rgDelivery.getCheckedRadioButtonId();
-        String deliveryType = (checkedId == R.id.rbDelivery) ? "Home Delivery" : "Store Pickup";
-        double totalPrice = CartManager.getInstance().getTotal();
+    private void loadDeliveryOptionsAndConfirm(List<CartItem> cartItems) {
+        firestoreDb.collection("DeliveryOptions")
+                .whereEqualTo("active", true)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    List<String> names = new ArrayList<>();
+                    List<Double> fees  = new ArrayList<>();
 
-        new AlertDialog.Builder(this)
-                .setTitle("Confirm Order")
-                .setMessage("Delivery: " + deliveryType
-                        + "\nItems: " + cartItems.size()
-                        + "\nTotal: LKR " + String.format("%.2f", totalPrice)
-                        + "\n\nPlace this order?")
-                .setPositiveButton("Yes, Place Order", (dialog, which) -> {
-                    setLoading(true);
-                    placeOrder(cartItems, deliveryType, totalPrice);
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
+                        String name = doc.getString("name");
+                        Double fee  = doc.getDouble("price");
+                        if (name != null) {
+                            names.add(name);
+                            fees.add(fee != null ? fee : 0.0);
+                        }
+                    }
+
+                    if (names.isEmpty()) {
+                        names.add("Store Pickup");
+                        fees.add(0.0);
+                        names.add("Home Delivery");
+                        fees.add(0.0);
+                    }
+
+                    String[] nameArr = names.toArray(new String[0]);
+                    String[] labelArr = new String[nameArr.length];
+                    for (int i = 0; i < nameArr.length; i++) {
+                        labelArr[i] = nameArr[i] + (fees.get(i) == 0 ? " (Free)" : String.format(" (+LKR %.2f)", fees.get(i)));
+                    }
+
+                    final int[] selected = {0};
+                    new AlertDialog.Builder(this)
+                            .setTitle("Select Delivery Option")
+                            .setSingleChoiceItems(labelArr, 0, (d, which) -> selected[0] = which)
+                            .setPositiveButton("Next", (d, which) -> {
+                                String chosenName = nameArr[selected[0]];
+                                double chosenFee  = fees.get(selected[0]);
+                                double itemTotal  = CartManager.getInstance().getTotal();
+                                double grandTotal = itemTotal + chosenFee;
+
+                                new AlertDialog.Builder(this)
+                                        .setTitle("Confirm Order")
+                                        .setMessage("Delivery: " + chosenName
+                                                + "\nItems: " + cartItems.size()
+                                                + "\nItems total: LKR " + String.format("%.2f", itemTotal)
+                                                + (chosenFee > 0 ? "\nDelivery fee: LKR " + String.format("%.2f", chosenFee) : "")
+                                                + "\nGrand Total: LKR " + String.format("%.2f", grandTotal)
+                                                + "\n\nPlace this order?")
+                                        .setPositiveButton("Yes, Place Order", (d2, w2) -> {
+                                            setLoading(true);
+                                            placeOrder(cartItems, chosenName, grandTotal);
+                                        })
+                                        .setNegativeButton("Back", null)
+                                        .show();
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
                 })
-                .setNegativeButton("Cancel", null)
-                .show();
+                .addOnFailureListener(e -> {
+                    int checkedId = rgDelivery.getCheckedRadioButtonId();
+                    String fallback = (checkedId == R.id.rbDelivery) ? "Home Delivery" : "Store Pickup";
+                    double total = CartManager.getInstance().getTotal();
+                    new AlertDialog.Builder(this)
+                            .setTitle("Confirm Order")
+                            .setMessage("Delivery: " + fallback + "\nTotal: LKR " + String.format("%.2f", total))
+                            .setPositiveButton("Place Order", (d, w) -> { setLoading(true); placeOrder(cartItems, fallback, total); })
+                            .setNegativeButton("Cancel", null).show();
+                });
     }
 
     private void placeOrder(List<CartItem> cartItems, String deliveryType, double totalPrice) {

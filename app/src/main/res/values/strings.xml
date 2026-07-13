@@ -2,8 +2,9 @@
 <resources>
     <string name="app_name">PrintXpress</string>
 
-    <string name="total_price_format">Total: $%1$.2f</string>
-    <string name="unit_price_format">Unit Price: $%1$.2f</string>
+    <string name="total_price_format">Total: LKR %1$.2f</string>
+    <string name="unit_price_format">Unit Price: LKR %1$.2f</string>
+    <string name="fcm_server_key">REPLACE_WITH_FCM_SERVER_KEY</string>
     <string name="order_details_format">Qty: %1$d  •  %2$s</string>
     <string name="artwork_format">Artwork: %1$s</string>
 </resources>

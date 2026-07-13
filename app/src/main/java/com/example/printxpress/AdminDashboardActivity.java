@@ -28,6 +28,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ManagePromosActivity.class)));
         findViewById(R.id.cardAllOrders).setOnClickListener(v ->
                 startActivity(new Intent(this, AllOrdersActivity.class)));
+        findViewById(R.id.cardManageDelivery).setOnClickListener(v ->
+                startActivity(new Intent(this, ManageDeliveryActivity.class)));
 
         findViewById(R.id.btnSignOut).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();

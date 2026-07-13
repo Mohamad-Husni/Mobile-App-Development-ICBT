@@ -38,6 +38,7 @@
         <activity android:name=".ManageUsersActivity" android:exported="false" />
         <activity android:name=".ManagePromosActivity" android:exported="false" />
         <activity android:name=".AllOrdersActivity" android:exported="false" />
+        <activity android:name=".ManageDeliveryActivity" android:exported="false" />
 
         <service
             android:name=".MyFirebaseMessagingService"
