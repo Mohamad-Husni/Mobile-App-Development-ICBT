@@ -47,7 +47,7 @@ public class OperatorOrderAdapter extends RecyclerView.Adapter<OperatorOrderAdap
 
         int itemCount = (order.getItems() != null) ? order.getItems().size() : 0;
         h.tvItemsSummary.setText(itemCount + " item(s)  •  " + order.getDeliveryType());
-        h.tvOpTotal.setText(String.format("$%.2f", order.getTotalPrice()));
+        h.tvOpTotal.setText(String.format("LKR %.2f", order.getTotalPrice()));
 
         h.tvOpStatus.setText(order.getStatus());
         applyStatusStyle(h.tvOpStatus, order.getStatus());

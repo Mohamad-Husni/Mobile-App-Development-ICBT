@@ -100,7 +100,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
     }
 
     private void updateTotal() {
-        tvOrderTotal.setText(String.format("$%.2f", CartManager.getInstance().getTotal()));
+        tvOrderTotal.setText(String.format("LKR %.2f", CartManager.getInstance().getTotal()));
     }
 
     private void confirmAndPlaceOrder() {
@@ -118,7 +118,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
                 .setTitle("Confirm Order")
                 .setMessage("Delivery: " + deliveryType
                         + "\nItems: " + cartItems.size()
-                        + "\nTotal: $" + String.format("%.2f", totalPrice)
+                        + "\nTotal: LKR " + String.format("%.2f", totalPrice)
                         + "\n\nPlace this order?")
                 .setPositiveButton("Yes, Place Order", (dialog, which) -> {
                     setLoading(true);

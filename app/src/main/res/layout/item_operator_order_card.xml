@@ -75,7 +75,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvItemsSummary"
-            tools:text="$45.00" />
+            tools:text="LKR 45.00" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnUpdateStatus"

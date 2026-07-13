@@ -80,7 +80,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvArtwork"
-            tools:text="Total: $750.00" />
+            tools:text="Total: LKR 750.00" />
 
         <!-- Timestamp -->
         <TextView

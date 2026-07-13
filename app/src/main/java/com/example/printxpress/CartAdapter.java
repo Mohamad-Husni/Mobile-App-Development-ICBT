@@ -38,16 +38,16 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder h, int position) {
         CartItem item = items.get(position);
         h.tvName.setText(item.getProduct().getCategory());
-        h.tvUnitPrice.setText(String.format("$%.2f / unit", item.getProduct().getBasePrice()));
+        h.tvUnitPrice.setText(String.format("LKR %.2f / unit", item.getProduct().getBasePrice()));
         h.tvArtwork.setText("Artwork: " + (item.getArtworkFileName().isEmpty()
                 ? "None" : item.getArtworkFileName()));
         h.tvQty.setText(String.valueOf(item.getQuantity()));
-        h.tvSubtotal.setText(String.format("Subtotal: $%.2f", item.getSubtotal()));
+        h.tvSubtotal.setText(String.format("Subtotal: LKR %.2f", item.getSubtotal()));
 
         h.btnIncrement.setOnClickListener(v -> {
             item.setQuantity(item.getQuantity() + 1);
             h.tvQty.setText(String.valueOf(item.getQuantity()));
-            h.tvSubtotal.setText(String.format("Subtotal: $%.2f", item.getSubtotal()));
+            h.tvSubtotal.setText(String.format("Subtotal: LKR %.2f", item.getSubtotal()));
             listener.onCartChanged();
         });
 
@@ -55,7 +55,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             if (item.getQuantity() > 1) {
                 item.setQuantity(item.getQuantity() - 1);
                 h.tvQty.setText(String.valueOf(item.getQuantity()));
-                h.tvSubtotal.setText(String.format("Subtotal: $%.2f", item.getSubtotal()));
+                h.tvSubtotal.setText(String.format("Subtotal: LKR %.2f", item.getSubtotal()));
                 listener.onCartChanged();
             }
         });

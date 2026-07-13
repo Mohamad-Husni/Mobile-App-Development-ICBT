@@ -107,7 +107,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvProductName"
-            tools:text="From $15.00 / unit" />
+            tools:text="From LKR 15.00 / unit" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/detailCard"
@@ -262,7 +262,7 @@
                     android:textColor="@color/primary"
                     android:textSize="17sp"
                     android:textStyle="bold"
-                    tools:text="Subtotal: $15.00" />
+                    tools:text="Subtotal: LKR 15.00" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddToCart"

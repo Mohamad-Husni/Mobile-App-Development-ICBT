@@ -187,7 +187,7 @@ public class ManageProductsActivity extends AppCompatActivity {
         @Override public void onBindViewHolder(PVH h, int pos) {
             Product p = list.get(pos);
             h.tvName.setText(p.getCategory());
-            h.tvPrice.setText(String.format("$%.2f", p.getBasePrice()));
+            h.tvPrice.setText(String.format("LKR %.2f", p.getBasePrice()));
             h.tvDesc.setText(p.getDescription());
             h.btnEdit.setOnClickListener(v -> editListener.onEdit(p, h.getAdapterPosition()));
             h.btnDelete.setOnClickListener(v -> deleteListener.onDelete(p, h.getAdapterPosition()));

@@ -51,7 +51,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tvProductCategory)).setText("PRINT PRODUCT");
         ((TextView) findViewById(R.id.tvProductName)).setText(productName);
         ((TextView) findViewById(R.id.tvProductPrice)).setText(
-                String.format("From $%.2f / unit", unitPrice));
+                String.format("From LKR %.2f / unit", unitPrice));
         ((TextView) findViewById(R.id.tvDescription)).setText(
                 description != null && !description.isEmpty() ? description
                         : "High quality printing on premium materials.");
@@ -87,7 +87,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private void updateSubtotal() {
         int qty = getQty();
-        tvSubtotal.setText(String.format("Subtotal: $%.2f", qty * unitPrice));
+        tvSubtotal.setText(String.format("Subtotal: LKR %.2f", qty * unitPrice));
     }
 
     private int getQty() {

@@ -62,7 +62,7 @@
             android:textSize="13sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCartArtwork"
-            tools:text="$15.00 / unit" />
+            tools:text="LKR 15.00 / unit" />
 
         <LinearLayout
             android:id="@+id/qtyControls"
@@ -120,7 +120,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCartUnitPrice"
-            tools:text="Subtotal: $15.00" />
+            tools:text="Subtotal: LKR 15.00" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

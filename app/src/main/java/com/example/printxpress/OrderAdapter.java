@@ -66,7 +66,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 ? items.get(0).getArtworkFileName() : "None";
         h.tvArtwork.setText("Artwork: " + artwork);
 
-        h.tvTotalPrice.setText(String.format("Total: $%.2f", order.getTotalPrice()));
+        h.tvTotalPrice.setText(String.format("Total: LKR %.2f", order.getTotalPrice()));
         h.tvStatus.setText(order.getStatus());
 
         String date = order.getOrderDate();
