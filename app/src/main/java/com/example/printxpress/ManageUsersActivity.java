@@ -51,7 +51,7 @@ public class ManageUsersActivity extends AppCompatActivity {
 
     private void loadUsers() {
         progress.setVisibility(View.VISIBLE);
-        firestoreDb.collection("users").get()
+        firestoreDb.collection("Users").get()
                 .addOnSuccessListener(snapshots -> {
                     users.clear();
                     for (QueryDocumentSnapshot doc : snapshots) {
@@ -77,7 +77,7 @@ public class ManageUsersActivity extends AppCompatActivity {
                 .setTitle("Change Role: " + user.get("name"))
                 .setItems(roles, (dialog, which) -> {
                     String newRole = roles[which];
-                    firestoreDb.collection("users").document(user.get("uid"))
+                    firestoreDb.collection("Users").document(user.get("uid"))
                             .update("role", newRole)
                             .addOnSuccessListener(unused -> {
                                 user.put("role", newRole);

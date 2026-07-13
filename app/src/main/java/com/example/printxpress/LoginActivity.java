@@ -209,48 +209,60 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void resolveRoleAndRoute(String uid) {
-        db.collection("users").document(uid).get()
+        db.collection("Users").document(uid).get()
                 .addOnSuccessListener(doc -> {
-                    setLoading(false);
-                    String role = (doc.exists() && doc.getString("role") != null)
-                            ? doc.getString("role") : ROLE_CUSTOMER;
-
-                    // If Admin tab selected but Firestore doc missing, write it now
-                    if (!doc.exists() && ROLE_ADMIN.equals(selectedRole)) {
-                        java.util.Map<String, Object> adminDoc = new java.util.HashMap<>();
-                        adminDoc.put("uid", uid);
-                        adminDoc.put("name", "Admin");
-                        adminDoc.put("email", ADMIN_EMAIL);
-                        adminDoc.put("role", ROLE_ADMIN);
-                        adminDoc.put("createdAt", com.google.firebase.Timestamp.now());
-                        db.collection("users").document(uid).set(adminDoc);
-                        role = ROLE_ADMIN;
+                    if (!doc.exists()) {
+                        // Fallback: check legacy lowercase collection
+                        db.collection("users").document(uid).get()
+                                .addOnSuccessListener(legacyDoc -> {
+                                    if (legacyDoc.exists()) {
+                                        // Migrate to "Users"
+                                        db.collection("Users").document(uid).set(legacyDoc.getData());
+                                    }
+                                    routeWithDoc(uid, legacyDoc.exists() ? legacyDoc : doc);
+                                })
+                                .addOnFailureListener(e -> routeWithDoc(uid, doc));
+                    } else {
+                        routeWithDoc(uid, doc);
                     }
-
-                    // Role mismatch check
-                    if (!role.equals(selectedRole)) {
-                        showError("This account is registered as \"" + role
-                                + "\". Please select the \"" + role + "\" tab and try again.");
-                        mAuth.signOut();
-                        return;
-                    }
-
-                    Intent intent;
-                    switch (role) {
-                        case ROLE_ADMIN:
-                            intent = new Intent(this, AdminDashboardActivity.class); break;
-                        case ROLE_OPERATOR:
-                            intent = new Intent(this, OperatorDashboardActivity.class); break;
-                        default:
-                            intent = new Intent(this, HomeActivity.class);
-                    }
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
                 })
                 .addOnFailureListener(e -> {
                     setLoading(false);
                     showError("Could not verify your role. Check your internet connection.");
                 });
+    }
+
+    private void routeWithDoc(String uid, com.google.firebase.firestore.DocumentSnapshot doc) {
+        setLoading(false);
+        String role = (doc.exists() && doc.getString("role") != null)
+                ? doc.getString("role") : ROLE_CUSTOMER;
+
+        if (!doc.exists() && ROLE_ADMIN.equals(selectedRole)) {
+            java.util.Map<String, Object> adminDoc = new java.util.HashMap<>();
+            adminDoc.put("uid", uid);
+            adminDoc.put("name", "Admin");
+            adminDoc.put("email", ADMIN_EMAIL);
+            adminDoc.put("role", ROLE_ADMIN);
+            adminDoc.put("createdAt", com.google.firebase.Timestamp.now());
+            db.collection("Users").document(uid).set(adminDoc);
+            role = ROLE_ADMIN;
+        }
+
+        if (!role.equals(selectedRole)) {
+            showError("This account is registered as \"" + role
+                    + "\". Please select the \"" + role + "\" tab and try again.");
+            mAuth.signOut();
+            return;
+        }
+
+        Intent intent;
+        switch (role) {
+            case ROLE_ADMIN:    intent = new Intent(this, AdminDashboardActivity.class); break;
+            case ROLE_OPERATOR: intent = new Intent(this, OperatorDashboardActivity.class); break;
+            default:            intent = new Intent(this, HomeActivity.class);
+        }
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     private void showForgotPasswordDialog() {
@@ -326,7 +338,7 @@ public class LoginActivity extends AppCompatActivity {
                             userDoc.put("email", user.getEmail());
                             userDoc.put("role", ROLE_CUSTOMER);
                             userDoc.put("createdAt", com.google.firebase.Timestamp.now());
-                            db.collection("users").document(user.getUid()).set(userDoc)
+                            db.collection("Users").document(user.getUid()).set(userDoc)
                                     .addOnSuccessListener(v -> {
                                         setLoading(false);
                                         Intent intent = new Intent(this, HomeActivity.class);
@@ -364,7 +376,7 @@ public class LoginActivity extends AppCompatActivity {
                     adminDoc.put("email", ADMIN_EMAIL);
                     adminDoc.put("role", ROLE_ADMIN);
                     adminDoc.put("createdAt", com.google.firebase.Timestamp.now());
-                    db.collection("users").document(uid).set(adminDoc)
+                    db.collection("Users").document(uid).set(adminDoc)
                             .addOnSuccessListener(v2 -> {
                                 setLoading(false);
                                 mAuth.signOut();
@@ -385,7 +397,7 @@ public class LoginActivity extends AppCompatActivity {
                                 adminDoc.put("email", ADMIN_EMAIL);
                                 adminDoc.put("role", ROLE_ADMIN);
                                 adminDoc.put("createdAt", com.google.firebase.Timestamp.now());
-                                db.collection("users").document(uid).set(adminDoc)
+                                db.collection("Users").document(uid).set(adminDoc)
                                         .addOnSuccessListener(v2 -> {
                                             setLoading(false);
                                             mAuth.signOut();

@@ -98,7 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
                         userDoc.put("role", "customer");
                         userDoc.put("createdAt", com.google.firebase.Timestamp.now());
                         com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                                .collection("users").document(uid).set(userDoc);
+                                .collection("Users").document(uid).set(userDoc);
 
                         setLoading(false);
                         Toast.makeText(this, "Welcome to PrintXpress!", Toast.LENGTH_SHORT).show();
