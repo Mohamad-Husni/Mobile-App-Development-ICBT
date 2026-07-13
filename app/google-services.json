@@ -12,7 +12,12 @@
           "package_name": "com.example.printxpress"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "492009100019-2egsrvoo0e4l3vloepodgg59ehfhpbl3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBRLPH4miQuxxZCryaUvMmi1_nNviu4gZ4"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492009100019-2egsrvoo0e4l3vloepodgg59ehfhpbl3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
