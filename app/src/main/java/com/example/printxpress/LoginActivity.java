@@ -15,11 +15,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
@@ -39,10 +47,23 @@ public class LoginActivity extends AppCompatActivity {
     private LinearProgressIndicator progressIndicator;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private GoogleSignInClient googleSignInClient;
     private String selectedRole = ROLE_CUSTOMER;
 
     private final ActivityResultLauncher<String> notificationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {});
+
+    private final ActivityResultLauncher<Intent> googleSignInLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } catch (ApiException e) {
+                    setLoading(false);
+                    showError("Google Sign-In failed: " + e.getMessage());
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +73,12 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db    = FirebaseFirestore.getInstance();
         requestNotificationPermissionIfNeeded();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
 
         etEmail           = findViewById(R.id.etEmail);
         etPassword        = findViewById(R.id.etPassword);
@@ -73,6 +100,11 @@ public class LoginActivity extends AppCompatActivity {
         View btnSetupAdmin = findViewById(R.id.btnSetupAdmin);
         if (btnSetupAdmin != null) {
             btnSetupAdmin.setOnClickListener(v -> setupAdminAccount());
+        }
+
+        MaterialButton btnGoogleSignIn = findViewById(R.id.btnGoogleSignIn);
+        if (btnGoogleSignIn != null) {
+            btnGoogleSignIn.setOnClickListener(v -> startGoogleSignIn());
         }
 
         selectRole(ROLE_CUSTOMER);
@@ -216,6 +248,61 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     setLoading(false);
                     showError("Could not verify your role. Check your internet connection.");
+                });
+    }
+
+    private void startGoogleSignIn() {
+        hideError();
+        setLoading(true);
+        googleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Intent signInIntent = googleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
+        });
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful() && task.getResult() != null
+                            && task.getResult().getUser() != null) {
+                        FirebaseUser user = task.getResult().getUser();
+                        boolean isNewUser = task.getResult().getAdditionalUserInfo() != null
+                                && task.getResult().getAdditionalUserInfo().isNewUser();
+                        if (isNewUser) {
+                            // New Google user — create Firestore doc as customer
+                            String[] nameParts = user.getDisplayName() != null
+                                    ? user.getDisplayName().split(" ", 2) : new String[]{"User", ""};
+                            java.util.Map<String, Object> userDoc = new java.util.HashMap<>();
+                            userDoc.put("uid", user.getUid());
+                            userDoc.put("name", user.getDisplayName());
+                            userDoc.put("firstName", nameParts[0]);
+                            userDoc.put("lastName", nameParts.length > 1 ? nameParts[1] : "");
+                            userDoc.put("email", user.getEmail());
+                            userDoc.put("role", ROLE_CUSTOMER);
+                            userDoc.put("createdAt", com.google.firebase.Timestamp.now());
+                            db.collection("users").document(user.getUid()).set(userDoc)
+                                    .addOnSuccessListener(v -> {
+                                        setLoading(false);
+                                        Intent intent = new Intent(this, HomeActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                        startActivity(intent);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        setLoading(false);
+                                        showError("Account created but profile save failed. Please try again.");
+                                    });
+                        } else {
+                            // Existing user — resolve role and route
+                            resolveRoleAndRoute(user.getUid());
+                        }
+                    } else {
+                        setLoading(false);
+                        String msg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Google Sign-In failed.";
+                        showError(msg);
+                    }
                 });
     }
 
