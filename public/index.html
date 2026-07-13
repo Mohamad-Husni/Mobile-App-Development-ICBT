@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrintXpress – Download App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a237e 0%, #283593 40%, #0d47a1 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 40px 36px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .logo-wrap {
+      width: 90px; height: 90px;
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 24px rgba(21,101,192,0.4);
+    }
+    .logo-wrap svg { width: 48px; height: 48px; fill: #fff; }
+    h1 { font-size: 28px; font-weight: 800; color: #1a237e; letter-spacing: -0.5px; }
+    .tagline { color: #607d8b; font-size: 14px; margin-top: 6px; margin-bottom: 28px; }
+    .info-box {
+      background: #f0f4ff;
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; color: #37474f; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-row span.dot { width: 8px; height: 8px; border-radius: 50%; background: #1565c0; flex-shrink: 0; }
+    .btn-download {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: #fff; text-decoration: none;
+      font-size: 17px; font-weight: 700;
+      padding: 18px 32px;
+      border-radius: 18px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(21,101,192,0.45);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .btn-download:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(21,101,192,0.3); }
+    .btn-download svg { width: 22px; height: 22px; fill: #fff; }
+    .steps {
+      margin-top: 28px;
+      text-align: left;
+    }
+    .steps h3 { font-size: 14px; font-weight: 700; color: #1a237e; margin-bottom: 12px; }
+    .step { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #1565c0; color: #fff;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .step p { font-size: 13px; color: #546e7a; line-height: 1.5; }
+    .step p b { color: #1a237e; }
+    .version { font-size: 11px; color: #90a4ae; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-wrap">
+      <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v4h4v4h12v-4h4v-4c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+    </div>
+    <h1>PrintXpress</h1>
+    <p class="tagline">Premium Printing, Delivered Fast</p>
+
+    <div class="info-box">
+      <div class="info-row"><span class="dot"></span>Android 7.0 and above</div>
+      <div class="info-row"><span class="dot"></span>Requires internet connection</div>
+      <div class="info-row"><span class="dot"></span>~11 MB download size</div>
+    </div>
+
+    <a class="btn-download" href="https://github.com/Mohamad-Husni/Mobile-App-Development-ICBT/releases/download/v1.0/PrintXpress.apk" download="PrintXpress.apk">
+      <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18l-5 5h3v6h4V7h3l-5-5z" transform="rotate(180,12,12)"/></svg>
+      Download APK
+    </a>
+
+    <div class="steps">
+      <h3>How to install:</h3>
+      <div class="step">
+        <div class="step-num">1</div>
+        <p>Tap <b>Download APK</b> above and open the file from your notifications or Downloads folder.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p>If prompted, go to <b>Settings → Allow from this source</b> and enable it.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p>Tap <b>Install</b> and open PrintXpress. Register or sign in to get started.</p>
+      </div>
+    </div>
+
+    <p class="version">PrintXpress v1.0 &nbsp;|&nbsp; Android App</p>
+  </div>
+</body>
+</html>
