@@ -19,20 +19,20 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingTop="72dp"
-            android:paddingBottom="32dp">
+            android:paddingTop="60dp"
+            android:paddingBottom="28dp">
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                app:cardBackgroundColor="#25FFFFFF"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#50FFFFFF"
-                app:strokeWidth="1dp">
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                app:cardBackgroundColor="#30FFFFFF"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#60FFFFFF"
+                app:strokeWidth="1.5dp">
                 <ImageView
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_gravity="center"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_print_logo"
@@ -42,33 +42,34 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.04"
+                android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.06"
                 android:text="PrintXpress"
                 android:textColor="@color/white"
-                android:textSize="34sp"
+                android:textSize="36sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:alpha="0.75"
+                android:alpha="0.80"
                 android:text="Premium Printing, Delivered Fast"
                 android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:letterSpacing="0.02" />
         </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/loginCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
+            android:layout_marginHorizontal="16dp"
             app:cardBackgroundColor="@color/surface"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="16dp"
-            app:strokeColor="#0D000000"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="24dp"
+            app:strokeColor="#10000000"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -80,20 +81,21 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="sans-serif-black"
                     android:text="Welcome Back"
                     android:textColor="@color/text_primary"
-                    android:textSize="24sp"
+                    android:textSize="26sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:layout_marginBottom="22dp"
-                    android:text="Select your role and sign in"
+                    android:layout_marginBottom="20dp"
+                    android:text="Select your role to sign in"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    android:letterSpacing="0.01" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -271,12 +273,14 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="58dp"
                     android:layout_marginTop="22dp"
                     android:text="Sign In"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:cornerRadius="16dp" />
+                    android:letterSpacing="0.04"
+                    app:cornerRadius="18dp"
+                    app:elevation="4dp" />
 
                 <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/progressIndicator"
@@ -317,18 +321,20 @@
                     android:id="@+id/btnGoogleSignIn"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="54dp"
                     android:layout_marginTop="16dp"
                     android:text="Continue with Google"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
-                    app:cornerRadius="16dp"
+                    android:textStyle="bold"
+                    app:cornerRadius="18dp"
                     app:icon="@drawable/ic_google"
                     app:iconGravity="textStart"
-                    app:iconPadding="10dp"
+                    app:iconPadding="12dp"
+                    app:iconSize="20dp"
                     app:iconTint="@null"
                     app:strokeColor="@color/divider"
-                    app:strokeWidth="1dp" />
+                    app:strokeWidth="1.5dp" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -337,19 +343,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
             android:orientation="horizontal">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:alpha="0.80"
-                android:text="Don`t have an account?  "
+                android:alpha="0.85"
+                android:text="Don't have an account?"
                 android:textColor="@color/white"
                 android:textSize="14sp" />
             <TextView
                 android:id="@+id/tvRegisterLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
                 android:padding="6dp"
                 android:text="Register Now"
                 android:textColor="@color/white"

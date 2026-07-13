@@ -7,8 +7,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -129,8 +132,7 @@ public class LoginActivity extends AppCompatActivity {
 
         TextView tvForgotPassword = findViewById(R.id.tvForgotPassword);
         if (tvForgotPassword != null) {
-            tvForgotPassword.setOnClickListener(v ->
-                    showError("Enter your email above then tap Forgot Password to reset."));
+            tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
         }
     }
 
@@ -249,6 +251,49 @@ public class LoginActivity extends AppCompatActivity {
                     setLoading(false);
                     showError("Could not verify your role. Check your internet connection.");
                 });
+    }
+
+    private void showForgotPasswordDialog() {
+        android.widget.EditText emailInput = new android.widget.EditText(this);
+        emailInput.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+                | android.text.InputType.TYPE_CLASS_TEXT);
+        emailInput.setHint("Enter your email address");
+        String prefill = etEmail.getText().toString().trim();
+        if (!prefill.isEmpty()) emailInput.setText(prefill);
+
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        int px = (int) (20 * getResources().getDisplayMetrics().density);
+        container.setPadding(px, px / 2, px, 0);
+        container.addView(emailInput);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Reset Password")
+                .setMessage("We will send a password reset link to your email.")
+                .setView(container)
+                .setPositiveButton("Send Reset Link", (dialog, which) -> {
+                    String email = emailInput.getText().toString().trim();
+                    if (TextUtils.isEmpty(email)) {
+                        showError("Please enter your email address.");
+                        return;
+                    }
+                    setLoading(true);
+                    mAuth.sendPasswordResetEmail(email)
+                            .addOnSuccessListener(v -> {
+                                setLoading(false);
+                                tvErrorMessage.setTextColor(
+                                        getResources().getColor(R.color.success, null));
+                                showError("Reset link sent to " + email + ". Check your inbox.");
+                            })
+                            .addOnFailureListener(e -> {
+                                setLoading(false);
+                                tvErrorMessage.setTextColor(
+                                        getResources().getColor(R.color.error, null));
+                                showError(friendlyError(e.getMessage()));
+                            });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void startGoogleSignIn() {
