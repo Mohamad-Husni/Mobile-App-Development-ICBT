@@ -14,9 +14,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MyOrdersActivity extends AppCompatActivity {
@@ -57,11 +60,6 @@ public class MyOrdersActivity extends AppCompatActivity {
         loadOrders();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (ordersListener == null) loadOrders();
-    }
 
     @Override
     protected void onDestroy() {
@@ -76,35 +74,42 @@ public class MyOrdersActivity extends AppCompatActivity {
 
         ordersListener = firestoreDb.collection("Orders")
                 .whereEqualTo("customerId", userId)
+                .orderBy("orderDate", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshots, error) -> {
-                    if (snapshots != null) {
-                        for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshots) {
-                            String status = doc.getString("status");
-                            if (status != null) {
-                                dbHelper.updateOrderStatusByFirebaseId(doc.getId(), status);
-                            }
-                        }
+                    progressIndicator.setVisibility(View.GONE);
+                    if (error != null || snapshots == null) {
+                        showEmpty();
+                        return;
                     }
-                    displayLocalOrders();
+                    orderList = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Order o = new Order();
+                        o.setFirebaseOrderId(doc.getId());
+                        o.setCustomerId(doc.getString("customerId"));
+                        o.setDeliveryType(doc.getString("deliveryType") != null ? doc.getString("deliveryType") : "");
+                        o.setStatus(doc.getString("status") != null ? doc.getString("status") : DBHelper.STATUS_PROCESSING);
+                        Double price = doc.getDouble("totalPrice");
+                        o.setTotalPrice(price != null ? price : 0.0);
+                        com.google.firebase.Timestamp ts = doc.getTimestamp("orderDate");
+                        o.setOrderDate(ts != null ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(ts.toDate()) : "");
+                        orderList.add(o);
+                        dbHelper.updateOrderStatusByFirebaseId(doc.getId(), o.getStatus());
+                    }
+                    if (orderList.isEmpty()) { showEmpty(); return; }
+                    emptyState.setVisibility(View.GONE);
+                    recyclerViewOrders.setVisibility(View.VISIBLE);
+                    if (adapter == null) {
+                        adapter = new OrderAdapter(orderList, this::confirmCancel, this::confirmReschedule);
+                        recyclerViewOrders.setAdapter(adapter);
+                    } else {
+                        adapter.notifyDataSetChanged();
+                    }
                 });
     }
 
-    private void displayLocalOrders() {
-        orderList = dbHelper.getOrdersForCustomer(userId);
-        for (Order order : orderList) {
-            order.setItems(dbHelper.getItemsForOrder(order.getLocalId()));
-        }
-        progressIndicator.setVisibility(View.GONE);
-
-        if (orderList.isEmpty()) {
-            emptyState.setVisibility(View.VISIBLE);
-            recyclerViewOrders.setVisibility(View.GONE);
-        } else {
-            emptyState.setVisibility(View.GONE);
-            recyclerViewOrders.setVisibility(View.VISIBLE);
-            adapter = new OrderAdapter(orderList, this::confirmCancel, this::confirmReschedule);
-            recyclerViewOrders.setAdapter(adapter);
-        }
+    private void showEmpty() {
+        emptyState.setVisibility(View.VISIBLE);
+        recyclerViewOrders.setVisibility(View.GONE);
     }
 
     private void confirmCancel(Order order, int position) {

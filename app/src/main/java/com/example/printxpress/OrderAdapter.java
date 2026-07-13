@@ -47,6 +47,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         Order order = orders.get(position);
 
         List<OrderItem> items = order.getItems();
+        String fid = order.getFirebaseOrderId();
+        String shortRef = (fid != null && fid.length() >= 6) ? fid.substring(0, 6).toUpperCase() : "------";
         if (items != null && !items.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (OrderItem item : items) {
@@ -54,7 +56,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             }
             h.tvProductName.setText(sb.toString().trim());
         } else {
-            h.tvProductName.setText("Order #" + order.getLocalId());
+            h.tvProductName.setText("Order #" + shortRef);
         }
 
         int itemCount = (items != null) ? items.size() : 0;

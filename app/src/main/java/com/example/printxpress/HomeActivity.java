@@ -97,6 +97,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void syncProductsFromFirestore() {
+        List<Product> local = dbHelper.getAllProducts();
+        if (!local.isEmpty()) return;
         firestoreDb.collection("Products").get()
                 .addOnSuccessListener(snapshots -> {
                     if (snapshots.isEmpty()) {
