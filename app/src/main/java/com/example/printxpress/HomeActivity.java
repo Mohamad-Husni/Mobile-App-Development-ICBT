@@ -1,12 +1,20 @@
 package com.example.printxpress;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,6 +41,11 @@ public class HomeActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private TextView tvNotifBadge;
 
+    private final ActivityResultLauncher<String> notifPermLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) refreshFcmToken();
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +71,8 @@ public class HomeActivity extends AppCompatActivity {
         loadPromoFromFirestore();
         wireUpCategoryCards();
         wireUpBottomNav();
+        requestNotificationPermission();
+        refreshFcmToken();
     }
 
     @Override
@@ -153,6 +168,23 @@ public class HomeActivity extends AppCompatActivity {
         intent.putExtra(ProductDetailActivity.EXTRA_UNIT_PRICE,   price);
         intent.putExtra(ProductDetailActivity.EXTRA_DESCRIPTION,  desc);
         startActivity(intent);
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    private void refreshFcmToken() {
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+            if (token != null) {
+                MyFirebaseMessagingService.saveFcmTokenToFirestore(token);
+            }
+        });
     }
 
     private void updateNotifBadge() {

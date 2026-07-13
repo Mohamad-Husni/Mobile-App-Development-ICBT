@@ -16,9 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -80,7 +84,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
         Log.d(TAG, "Refreshed token: " + token);
-        // Ideally, send this token to your app server to maintain a mapping to the user
+        saveFcmTokenToFirestore(token);
+    }
+
+    public static void saveFcmTokenToFirestore(String token) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || token == null) return;
+        Map<String, Object> data = new HashMap<>();
+        data.put("fcmToken", token);
+        FirebaseFirestore.getInstance()
+                .collection("Users")
+                .document(user.getUid())
+                .update(data)
+                .addOnFailureListener(e -> Log.w("FCM_Service", "Token save failed: " + e.getMessage()));
     }
 
     /**
