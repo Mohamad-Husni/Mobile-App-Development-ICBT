@@ -158,23 +158,27 @@ PrintXpress App
 
 ## Architecture Overview
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Android App                         │
-│                                                         │
-│  Activities (View + Controller)                         │
-│       │                                                 │
-│       ├── DBHelper (SQLiteOpenHelper)  ← Local cache    │
-│       │        SQLite: PrintXpress.db v9                │
-│       │                                                 │
-│       └── FirebaseFirestore            ← Cloud source   │
-│                    │                                    │
-│             FirebaseAuth               ← Auth           │
-│             FirebaseMessaging          ← Push notifs    │
-└─────────────────────────────────────────────────────────┘
-         │                          │
-    SQLite (device)           Firestore (cloud)
-  5 tables, local first    Real-time sync, source of truth
+```mermaid
+graph TD
+    subgraph AndroidApp["Android App"]
+        A[Activities / UI Layer]
+        B[DBHelper\nSQLiteOpenHelper]
+        C[CartManager\nSingleton]
+        A --> B
+        A --> C
+    end
+
+    subgraph Firebase["Firebase Backend"]
+        D[Firebase Auth]
+        E[Firestore\nCloud Database]
+        F[FCM\nPush Notifications]
+    end
+
+    A --> D
+    A --> E
+    A --> F
+    E -- sync --> B
+    B -- dual-write --> E
 ```
 
 **Data flow:** Firestore is the source of truth. On first load or sync, data is written to SQLite. All UI reads from SQLite for speed. All writes go to both SQLite and Firestore simultaneously (dual-write).
@@ -183,44 +187,61 @@ PrintXpress App
 
 ## ERD — Entity Relationship Diagram
 
-```
-┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-│   Customer   │        │    Order     │        │  OrderItem   │
-│──────────────│        │──────────────│        │──────────────│
-│ customer_id  │──1───<>│ order_id     │──1───<>│ item_id      │
-│ name         │        │ customer_id  │        │ order_id     │
-│ email        │        │ order_date   │        │ product_id   │
-│ phone        │        │ delivery_type│        │ quantity     │
-│ address      │        │ status       │        │ unit_price   │
-└──────────────┘        │ total_price  │        │ artwork_file │
-                        └──────────────┘        └──────┬───────┘
-                                                        │ N
-                                                        │
-                                               ┌────────┴─────┐
-                                               │   Product    │
-                                               │──────────────│
-                                               │ product_id   │
-                                               │ category     │
-                                               │ base_price   │
-                                               │ description  │
-                                               └──────────────┘
+```mermaid
+erDiagram
+    CUSTOMER {
+        string customer_id PK
+        string name
+        string email
+        string phone
+        string address
+    }
+    ORDER {
+        int order_id PK
+        string firebase_order_id
+        string customer_id FK
+        datetime order_date
+        string delivery_type
+        string status
+        real total_price
+    }
+    ORDER_ITEM {
+        int item_id PK
+        int order_id FK
+        string firebase_item_id
+        string product_id FK
+        int quantity
+        string artwork_file_name
+        real unit_price
+    }
+    PRODUCT {
+        string product_id PK
+        string category
+        real base_price
+        string description
+        datetime synced_at
+    }
+    NOTIFICATION {
+        int notif_id PK
+        string customer_id FK
+        string type
+        string message
+        int is_read
+        datetime created_at
+    }
+    PROMOTION {
+        string promo_id PK
+        string title
+        real discount_pct
+        datetime start_date
+        datetime end_date
+        int active
+    }
 
-┌──────────────┐        ┌──────────────┐
-│ Notification │        │  Promotion   │
-│──────────────│        │──────────────│
-│ notif_id     │        │ promo_id     │
-│ customer_id  │        │ title        │
-│ type         │        │ discount_pct │
-│ message      │        │ start_date   │
-│ is_read      │        │ end_date     │
-│ created_at   │        │ active       │
-└──────────────┘        └──────────────┘
-
-Relationships:
-  Customer   1 ──── * Order
-  Order      1 ──── * OrderItem
-  Product    1 ──── * OrderItem
-  Customer   1 ──── * Notification
+    CUSTOMER ||--o{ ORDER : "places"
+    ORDER ||--o{ ORDER_ITEM : "contains"
+    PRODUCT ||--o{ ORDER_ITEM : "included in"
+    CUSTOMER ||--o{ NOTIFICATION : "receives"
 ```
 
 ---
@@ -296,88 +317,139 @@ Database name: `PrintXpress.db` — Version: `9`
 
 ## UML Class Diagram
 
-```
-┌─────────────────────┐      ┌─────────────────────┐
-│      Customer       │      │       Product        │
-│─────────────────────│      │─────────────────────│
-│ - customerId: String│      │ - productId: String  │
-│ - name: String      │      │ - category: String   │
-│ - email: String     │      │ - basePrice: double  │
-│ - phone: String     │      │ - description: String│
-│ - address: String   │      └─────────────────────┘
-└─────────────────────┘                │
-          │ 1                          │ 1
-          │                            │
-          │ *                          │ *
-┌─────────────────────┐      ┌─────────────────────┐
-│        Order        │      │      OrderItem       │
-│─────────────────────│      │─────────────────────│
-│ - orderId: int      │──1─*─│ - itemId: int        │
-│ - firebaseOrderId   │      │ - orderId: int       │
-│ - customerId: String│      │ - productId: String  │
-│ - orderDate: String │      │ - quantity: int      │
-│ - deliveryType      │      │ - artworkFileName    │
-│ - status: String    │      │ - unitPrice: double  │
-│ - totalPrice: double│      └─────────────────────┘
-└─────────────────────┘
+```mermaid
+classDiagram
+    class Customer {
+        +String customerId
+        +String name
+        +String email
+        +String phone
+        +String address
+    }
+    class Product {
+        +String productId
+        +String category
+        +double basePrice
+        +String description
+    }
+    class Order {
+        +int orderId
+        +String firebaseOrderId
+        +String customerId
+        +String orderDate
+        +String deliveryType
+        +String status
+        +double totalPrice
+    }
+    class OrderItem {
+        +int itemId
+        +int orderId
+        +String productId
+        +int quantity
+        +String artworkFileName
+        +double unitPrice
+    }
+    class Notification {
+        +int notifId
+        +String customerId
+        +String type
+        +String message
+        +boolean isRead
+        +String createdAt
+    }
+    class CartItem {
+        +Product product
+        +int quantity
+        +String artworkFileName
+        +getSubtotal() double
+    }
+    class DBHelper {
+        +insertCustomer()
+        +insertProduct()
+        +upsertProduct()
+        +insertOrder()
+        +getOrdersByUid()
+        +insertOrderItems()
+        +insertNotification()
+        +getUnreadCount()
+        +updateOrderStatus()
+    }
+    class CartManager {
+        -List~CartItem~ items
+        +getInstance() CartManager
+        +addItem()
+        +removeItem()
+        +clear()
+        +getTotal() double
+    }
 
-┌─────────────────────┐      ┌─────────────────────┐
-│    Notification     │      │      CartItem        │
-│─────────────────────│      │─────────────────────│
-│ - notifId: int      │      │ - product: Product   │
-│ - customerId: String│      │ - quantity: int      │
-│ - type: String      │      │ - artworkFileName    │
-│ - message: String   │      │ + getSubtotal()      │
-│ - isRead: boolean   │      └─────────────────────┘
-│ - createdAt: String │         (in-memory only)
-└─────────────────────┘
-
-┌─────────────────────┐      ┌─────────────────────┐
-│      DBHelper       │      │   CartManager        │
-│─────────────────────│      │─────────────────────│
-│ + insertCustomer()  │      │ - items: List        │
-│ + insertProduct()   │      │ + addItem()          │
-│ + upsertProduct()   │      │ + removeItem()       │
-│ + insertOrder()     │      │ + clear()            │
-│ + getOrdersByUid()  │      │ + getTotal()         │
-│ + insertOrderItems()│      │ + getInstance()      │
-│ + insertNotif()     │      └─────────────────────┘
-│ + getUnreadCount()  │
-└─────────────────────┘
+    Customer "1" --> "many" Order : places
+    Order "1" --> "many" OrderItem : contains
+    Product "1" --> "many" OrderItem : referenced by
+    Customer "1" --> "many" Notification : receives
+    CartManager "1" --> "many" CartItem : holds
+    CartItem --> Product : references
 ```
 
 ---
 
 ## UML Use Case Diagram
 
-```
-                         ┌──────────────────────────────────────────┐
-                         │               PrintXpress App             │
-                         │                                          │
-  ┌──────────┐           │  (UC1)  Register account                 │
-  │          │──────────>│  (UC2)  Login with role selection        │
-  │ Customer │           │  (UC3)  Browse product catalogue         │
-  │          │──────────>│  (UC4)  View product details             │
-  └──────────┘           │  (UC5)  Add product to cart              │
-                         │  (UC6)  Manage cart (qty / remove)       │
-                         │  (UC7)  Place order (checkout)           │
-                         │  (UC8)  View order history               │
-                         │  (UC9)  Cancel order                     │
-                         │  (UC10) Receive push notifications       │
-                         │  (UC11) View notification list           │
-                         │  (UC12) Edit profile / address           │
-                         │  (UC13) View FAQ                         │
-                         │                                          │
-  ┌──────────┐           │  (UC14) View live order queue            │
-  │ Operator │──────────>│  (UC15) Update order status              │
-  └──────────┘           │  (UC16) Trigger customer notification    │
-                         │                                          │
-  ┌──────────┐           │  (UC17) Manage products (CRUD)           │
-  │          │──────────>│  (UC18) Manage users / roles             │
-  │  Admin   │──────────>│  (UC19) Manage promotions (CRUD)         │
-  │          │──────────>│  (UC20) View all orders                  │
-  └──────────┘           │  (UC21) Setup admin account (one-time)   │
-                         └──────────────────────────────────────────┘
+```mermaid
+graph LR
+    Customer(["👤 Customer"])
+    Operator(["🖨️ Operator"])
+    Admin(["🔧 Admin"])
+
+    subgraph PrintXpress App
+        UC1([Register account])
+        UC2([Login with role selection])
+        UC3([Browse product catalogue])
+        UC4([View product details])
+        UC5([Add product to cart])
+        UC6([Manage cart])
+        UC7([Place order])
+        UC8([View order history])
+        UC9([Cancel order])
+        UC10([Receive push notifications])
+        UC11([View notification list])
+        UC12([Edit profile / address])
+        UC13([View FAQ])
+        UC14([View live order queue])
+        UC15([Update order status])
+        UC16([Trigger customer notification])
+        UC17([Manage products CRUD])
+        UC18([Manage users and roles])
+        UC19([Manage promotions CRUD])
+        UC20([View all orders])
+        UC21([Setup admin account])
+    end
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Customer --> UC4
+    Customer --> UC5
+    Customer --> UC6
+    Customer --> UC7
+    Customer --> UC8
+    Customer --> UC9
+    Customer --> UC10
+    Customer --> UC11
+    Customer --> UC12
+    Customer --> UC13
+
+    Operator --> UC2
+    Operator --> UC14
+    Operator --> UC15
+    Operator --> UC16
+
+    Admin --> UC2
+    Admin --> UC17
+    Admin --> UC18
+    Admin --> UC19
+    Admin --> UC20
+    Admin --> UC21
 ```
 
 ---
@@ -386,129 +458,143 @@ Database name: `PrintXpress.db` — Version: `9`
 
 ### Customer Places an Order
 
-```
-Customer    LoginActivity   HomeActivity  ProductDetail   CartActivity    Firestore    SQLite
-    │              │               │              │               │            │           │
-    │──Login───>   │               │              │               │            │           │
-    │              │──Auth─────────────────────────────────────>  │            │           │
-    │              │<─role:customer────────────────────────────── │            │           │
-    │              │──startActivity──>│             │             │            │           │
-    │              │               │─loadProducts──────────────>  │            │           │
-    │              │               │<─products─────────────────── │            │           │
-    │              │               │──────────────────────────────────write──> │           │
-    │──tapProduct──│──────────────>│              │               │            │           │
-    │              │               │─startActivity──>             │            │           │
-    │──addToCart───│───────────────│─────────────>│               │            │           │
-    │              │               │              │─CartManager.add            │           │
-    │──viewCart────│───────────────│──────────────│─────────────>│             │           │
-    │──placeOrder──│───────────────│──────────────│─────────────>│             │           │
-    │              │               │              │               │─writeOrder────────────>│
-    │              │               │              │               │─writeOrder──>│          │
-    │              │               │              │               │<─orderId─── │           │
-    │<─Notification│               │              │               │─FCM push───>│           │
+```mermaid
+sequenceDiagram
+    actor C as Customer
+    participant L as LoginActivity
+    participant H as HomeActivity
+    participant P as ProductDetailActivity
+    participant CA as CartActivity
+    participant FS as Firestore
+    participant DB as SQLite
+
+    C->>L: Enter credentials + select Customer tab
+    L->>FS: signInWithEmailAndPassword()
+    FS-->>L: uid + role: customer
+    L->>H: startActivity(HomeActivity)
+    H->>FS: load Products collection
+    FS-->>H: product list
+    H->>DB: upsertProducts()
+    C->>H: tap product card
+    H->>P: startActivity(ProductDetailActivity)
+    C->>P: tap Add to Cart
+    P->>CA: CartManager.addItem()
+    C->>CA: view cart, adjust qty, enter artwork
+    C->>CA: tap Place Order
+    CA->>FS: write Order header + OrderItems
+    CA->>DB: insertOrder() + insertOrderItems()
+    FS-->>CA: orderId
+    FS->>C: FCM order confirmation notification
+    CA->>C: navigate to MyOrdersActivity
 ```
 
 ### Operator Updates Order Status
 
-```
-Operator  OperatorDashboard   Firestore   SQLite   FCM   Customer
-    │              │               │          │      │        │
-    │──Login───>   │               │          │      │        │
-    │              │─listen────────>│          │      │        │
-    │              │<─orders─────── │          │      │        │
-    │──tapStatus── │               │          │      │        │
-    │              │─showDialog     │          │      │        │
-    │──selectReady─│               │          │      │        │
-    │              │─update────────>│          │      │        │
-    │              │─update─────────────────>  │      │        │
-    │              │─sendNotif──────────────────────>│        │
-    │              │                │          │      │─push──>│
-    │              │<─success─────── │          │      │        │
+```mermaid
+sequenceDiagram
+    actor O as Operator
+    participant OD as OperatorDashboardActivity
+    participant FS as Firestore
+    participant DB as SQLite
+    participant FCM as FCM Service
+    actor C as Customer
+
+    O->>OD: Login as Operator
+    OD->>FS: addSnapshotListener(Orders)
+    FS-->>OD: real-time order list
+    O->>OD: tap order → select new status
+    OD->>OD: show confirmation dialog
+    O->>OD: confirm
+    OD->>FS: update Orders/{id}.status
+    OD->>DB: updateOrderStatus()
+    OD->>FCM: send push to customer fcmToken
+    FCM->>C: push notification "Order is Ready"
+    FS-->>OD: success
 ```
 
 ---
 
 ## Role Routing Logic
 
-```
-User opens app
-      │
-      ▼
-Firebase Auth session exists?
-      │ Yes                │ No
-      ▼                    ▼
-Read users/{uid}.role    Show LoginActivity
-from Firestore
-      │
-      ├── role == "customer"  ──>  HomeActivity
-      ├── role == "operator"  ──>  OperatorDashboardActivity
-      └── role == "admin"     ──>  AdminDashboardActivity
-
-Role Mismatch Check:
-  If selected tab ≠ Firestore role → show inline error → sign out
-  If Admin tab selected + no Firestore doc → auto-write admin doc
+```mermaid
+flowchart TD
+    A([User opens app]) --> B{Firebase Auth\nsession exists?}
+    B -- Yes --> C[Read users/uid/role\nfrom Firestore]
+    B -- No --> D[Show LoginActivity]
+    D --> E{Selected tab\nmatches role?}
+    E -- Mismatch --> F[Show inline error\nSign out]
+    E -- Match --> C
+    C --> G{role value}
+    G -- customer --> H[HomeActivity]
+    G -- operator --> I[OperatorDashboardActivity]
+    G -- admin --> J[AdminDashboardActivity]
+    C --> K{Admin tab +\nno Firestore doc?}
+    K -- Yes --> L[Auto-write admin\ndocument to Firestore]
+    L --> J
 ```
 
 ---
 
 ## Ordering Flow
 
-```
-HomeActivity
-  └─ tap product card
-       └─ ProductDetailActivity
-            └─ tap "Add to Cart"  →  CartManager.addItem()
-                 └─ CartActivity
-                      ├─ adjust quantities / remove items
-                      ├─ enter artwork filename per item
-                      ├─ select Pickup or Home Delivery
-                      └─ tap "Place Order"
-                           ├─ write Order header  →  SQLite + Firestore
-                           ├─ write OrderItems    →  SQLite + Firestore
-                           ├─ FCM notification    →  Customer device
-                           └─ navigate to MyOrdersActivity
+```mermaid
+flowchart TD
+    A[HomeActivity\nProduct Grid] --> B[Tap product card]
+    B --> C[ProductDetailActivity\nSpecs + Price]
+    C --> D[Tap Add to Cart]
+    D --> E[CartManager.addItem]
+    E --> F[CartActivity\nCart Items List]
+    F --> G[Adjust qty / remove items\nEnter artwork filename]
+    G --> H[Select Pickup or\nHome Delivery]
+    H --> I[Tap Place Order]
+    I --> J[Write Order header\nSQLite + Firestore]
+    J --> K[Write OrderItems\nSQLite + Firestore]
+    K --> L[FCM Order Confirmation\nto Customer]
+    L --> M[MyOrdersActivity]
 ```
 
 ---
 
 ## Operator Flow
 
-```
-OperatorDashboardActivity
-  └─ Firestore real-time listener (Orders collection)
-       └─ RecyclerView of all active orders
-            └─ tap order card
-                 └─ AlertDialog: Processing / Printing / Ready / Cancelled
-                      └─ on confirm
-                           ├─ update Firestore Orders/{id}.status
-                           ├─ update local SQLite orders.status
-                           └─ FCM push to customer fcmToken
+```mermaid
+flowchart TD
+    A[OperatorDashboardActivity] --> B[Firestore real-time\nsnapshot listener]
+    B --> C[RecyclerView of\nactive orders]
+    C --> D[Operator taps order card]
+    D --> E[AlertDialog: select new status\nProcessing / Printing / Ready / Cancelled]
+    E --> F[Confirm]
+    F --> G[Update Firestore\nOrders/id/status]
+    F --> H[Update SQLite\norders.status]
+    F --> I[FCM push to\ncustomer fcmToken]
+    I --> J[Customer receives\npush notification]
 ```
 
 ---
 
 ## Admin Flow
 
-```
-AdminDashboardActivity
-  ├─ Manage Products
-  │     ├─ Load products from Firestore
-  │     ├─ Add product → Firestore + SQLite upsert
-  │     ├─ Edit product → Firestore + SQLite upsert
-  │     └─ Delete product → Firestore delete
-  │
-  ├─ Manage Users
-  │     ├─ Load all users from Firestore users collection
-  │     └─ Change role dialog → update users/{uid}.role in Firestore
-  │
-  ├─ Manage Promotions
-  │     ├─ Load promotions from Firestore
-  │     ├─ Add promo → Firestore
-  │     ├─ Toggle active/inactive
-  │     └─ Delete promo
-  │
-  └─ View All Orders
-        └─ Read-only list from Firestore Orders collection
+```mermaid
+flowchart TD
+    A[AdminDashboardActivity] --> B[Manage Products]
+    A --> C[Manage Users]
+    A --> D[Manage Promotions]
+    A --> E[View All Orders]
+
+    B --> B1[Load from Firestore]
+    B --> B2[Add product\nFirestore + SQLite]
+    B --> B3[Edit product\nFirestore + SQLite]
+    B --> B4[Delete product\nFirestore]
+
+    C --> C1[Load all users\nfrom Firestore]
+    C --> C2[Change role dialog\nupdate users/uid/role]
+
+    D --> D1[Load promotions\nfrom Firestore]
+    D --> D2[Add promo]
+    D --> D3[Toggle active/inactive]
+    D --> D4[Delete promo]
+
+    E --> E1[Read-only list\nFirestore Orders]
 ```
 
 ---
