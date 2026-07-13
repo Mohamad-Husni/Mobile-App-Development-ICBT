@@ -8,6 +8,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -109,12 +110,22 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnCar
             return;
         }
 
-        String deliveryType = (rgDelivery.getCheckedRadioButtonId() == R.id.rbDelivery)
-                ? "Home Delivery" : "Store Pickup";
+        int checkedId = rgDelivery.getCheckedRadioButtonId();
+        String deliveryType = (checkedId == R.id.rbDelivery) ? "Home Delivery" : "Store Pickup";
         double totalPrice = CartManager.getInstance().getTotal();
 
-        setLoading(true);
-        placeOrder(cartItems, deliveryType, totalPrice);
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm Order")
+                .setMessage("Delivery: " + deliveryType
+                        + "\nItems: " + cartItems.size()
+                        + "\nTotal: $" + String.format("%.2f", totalPrice)
+                        + "\n\nPlace this order?")
+                .setPositiveButton("Yes, Place Order", (dialog, which) -> {
+                    setLoading(true);
+                    placeOrder(cartItems, deliveryType, totalPrice);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void placeOrder(List<CartItem> cartItems, String deliveryType, double totalPrice) {
